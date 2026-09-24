@@ -1,0 +1,49 @@
+Claude follows 5 distinct phases
+
+
+Five-step request flow
+=-==-=-=-=-=-=-=-=-=-=
+
+Request to server -> Request to Anthropic API -> Model Processing -> Response to server -> Response to client
+
+
+1. Request to server
+
+
+		Request can be made by Anthropic SDK / HTTP request -> ges back response
+
+
+2. Request to Anthropic API
+
+	Every API call will include these fields mandatory
+	
+	API Key - key
+	Model   - Selected model (opus, sonnet, etc)
+	Messages - user input
+	Max Tokens - number of tokens claude can generate.
+
+
+3. Model Processing
+
+	Request		-> Tokenization
+						(Breaks text to smaller chunks)
+		
+				 - Embedding 
+						(Converts each tokens to embeddings and conveted as numberical and started searching as semantic relationships)
+		
+				 - Contextualizatoin
+				        (Gets Each embedding based surrounding words)
+		
+	Response    <- Genration (Generated final highest possible word to respond)
+
+
+
+4. Response to server
+		
+		Output response is placed under 'assistant message'
+		
+		Message -> generated output
+		
+		Usage -> no of input + output tokens
+		
+		Stop reason -> why stopped generating

@@ -1,0 +1,77 @@
+[
+  {
+    "output": "\nimport re\n\ndef parse_s3_bucket_name(s3_uri):\n    match = re.match(r's3://([a-z0-9.-]+)/?', s3_uri)\n    return match.group(1) if match else None\n\n# Test cases\nprint(parse_s3_bucket_name(\"s3://my-bucket/path/to/file.txt\"))\nprint(parse_s3_bucket_name(\"s3://another-bucket-123/\"))\nprint(parse_s3_bucket_name(\"s3://bucket\"))\n",
+    "test_case": {
+      "task": "Parse an AWS S3 bucket name from an S3 URI (e.g., s3://my-bucket/path/to/file.txt)",
+      "format": "regex"
+    },
+    "model_score": 6,
+    "syntax_score": 10,
+    "score": 8.0,
+    "reasoning": "The solution correctly extracts bucket names from well-formed S3 URIs and handles basic edge cases. However, the regex pattern is overly permissive\u2014it accepts uppercase letters which violate AWS S3 bucket naming conventions. Additionally, it lacks comprehensive validation against S3's full naming requirements and provides no feedback on why parsing failed. For production use, the pattern should be [a-z0-9.-]+ (lowercase only) and ideally validate length and hyphen placement constraints.",
+    "evaluation": {
+      "strengths": [
+        "Simple and readable implementation using regex for straightforward URI parsing",
+        "Handles edge cases like trailing slashes and URIs without paths",
+        "Returns None for invalid inputs, allowing graceful error handling"
+      ],
+      "weaknesses": [
+        "Regex pattern allows uppercase letters in bucket names (S3 bucket names must be lowercase), permitting invalid inputs like 's3://My-Bucket'",
+        "Does not validate S3 bucket naming rules (length 3-63 chars, no consecutive hyphens, no hyphens at start/end)",
+        "No error handling or logging; silent failure on malformed URIs makes debugging difficult"
+      ],
+      "reasoning": "The solution correctly extracts bucket names from well-formed S3 URIs and handles basic edge cases. However, the regex pattern is overly permissive\u2014it accepts uppercase letters which violate AWS S3 bucket naming conventions. Additionally, it lacks comprehensive validation against S3's full naming requirements and provides no feedback on why parsing failed. For production use, the pattern should be [a-z0-9.-]+ (lowercase only) and ideally validate length and hyphen placement constraints.",
+      "score": 6
+    }
+  },
+  {
+    "output": "\n{\n  \"FunctionName\": \"scheduled-function\",\n  \"Runtime\": \"python3.11\",\n  \"Role\": \"arn:aws:iam::123456789012:role/lambda-role\",\n  \"Handler\": \"index.handler\",\n  \"Timeout\": 60,\n  \"MemorySize\": 128,\n  \"Environment\": {\n    \"Variables\": {\n      \"API_KEY\": \"your-api-key-here\",\n      \"LOG_LEVEL\": \"INFO\"\n    }\n  },\n  \"Events\": {\n    \"ScheduleRule\": {\n      \"Type\": \"Schedule\",\n      \"Properties\": {\n        \"ScheduleExpression\": \"rate(5 minutes)\",\n        \"Name\": \"lambda-5min-schedule\",\n        \"Description\": \"Trigger Lambda every 5 minutes\"\n      }\n    }\n  }\n}\n",
+    "test_case": {
+      "task": "Create a JSON configuration object for an AWS Lambda function that runs every 5 minutes with environment variables for API_KEY and LOG_LEVEL",
+      "format": "json"
+    },
+    "model_score": 5,
+    "syntax_score": 10,
+    "score": 7.5,
+    "reasoning": "The solution demonstrates understanding of Lambda scheduling and environment variables, but has critical issues. The primary problem is that the JSON structure conflates Lambda function configuration with EventBridge event source mapping. The Events section is not part of the standard AWS Lambda CreateFunction API\u2014scheduling must be configured separately via EventBridge (CloudWatch Events) or through SAM/CloudFormation templates. Additionally, hardcoding API_KEY is a security anti-pattern. The IAM role would need permissions for EventBridge to invoke the function, which isn't documented.",
+    "evaluation": {
+      "strengths": [
+        "Correctly specifies the 5-minute schedule using 'rate(5 minutes)' syntax",
+        "Includes all required environment variables (API_KEY and LOG_LEVEL) with reasonable defaults",
+        "Provides reasonable defaults for runtime, timeout, and memory configuration"
+      ],
+      "weaknesses": [
+        "Hardcodes sensitive API_KEY in plain text instead of using AWS Secrets Manager or Parameter Store",
+        "Mixes Lambda function configuration with EventBridge scheduling rules in a non-standard way; Events object is not valid in standard Lambda CreateFunction API",
+        "Uses placeholder account ID (123456789012) without documentation; real implementation needs proper IAM role with EventBridge permissions"
+      ],
+      "reasoning": "The solution demonstrates understanding of Lambda scheduling and environment variables, but has critical issues. The primary problem is that the JSON structure conflates Lambda function configuration with EventBridge event source mapping. The Events section is not part of the standard AWS Lambda CreateFunction API\u2014scheduling must be configured separately via EventBridge (CloudWatch Events) or through SAM/CloudFormation templates. Additionally, hardcoding API_KEY is a security anti-pattern. The IAM role would need permissions for EventBridge to invoke the function, which isn't documented.",
+      "score": 5
+    }
+  },
+  {
+    "output": "\nimport re\n\ndef extract_region_from_arn(arn):\n    \"\"\"\n    Extracts the region code from an AWS ARN string.\n    \n    Args:\n        arn (str): AWS ARN string\n        \n    Returns:\n        str: Region code, or empty string if not found\n    \"\"\"\n    match = re.search(r':([a-z]{2}-[a-z]+-\\d):', arn)\n    if match:\n        return match.group(1)\n    return \"\"\n",
+    "test_case": {
+      "task": "Write a Python function that extracts the region code from an AWS ARN string (e.g., arn:aws:s3:us-west-2:123456789012:bucket/my-bucket)",
+      "format": "python"
+    },
+    "model_score": 5,
+    "syntax_score": 10,
+    "score": 7.5,
+    "reasoning": "The solution demonstrates a solid understanding of regex-based parsing, but the regex pattern `[a-z]{2}-[a-z]+-\\d` is overly restrictive. AWS regions follow the pattern of 2 lowercase letters, hyphen, word characters, hyphen, and one or more digits (e.g., us-east-1, eu-central-1, ap-southeast-2). The current pattern fails on regions with 2-digit suffixes. Additionally, the function lacks defensive programming practices such as type checking or handling edge cases like None inputs.",
+    "evaluation": {
+      "strengths": [
+        "Clean, readable code with proper documentation and clear variable naming",
+        "Correctly uses regex pattern matching for ARN parsing with colon delimiters",
+        "Handles missing region gracefully by returning empty string"
+      ],
+      "weaknesses": [
+        "Regex pattern is incomplete: it only matches regions ending in single digit (e.g., 'us-west-2') but misses newer formats like 'eu-central-1' or multi-digit suffixes",
+        "No input validation - doesn't check if arn parameter is a valid string or handle None/empty inputs",
+        "Limited error handling and no logging for debugging failed extractions"
+      ],
+      "reasoning": "The solution demonstrates a solid understanding of regex-based parsing, but the regex pattern `[a-z]{2}-[a-z]+-\\d` is overly restrictive. AWS regions follow the pattern of 2 lowercase letters, hyphen, word characters, hyphen, and one or more digits (e.g., us-east-1, eu-central-1, ap-southeast-2). The current pattern fails on regions with 2-digit suffixes. Additionally, the function lacks defensive programming practices such as type checking or handling edge cases like None inputs.",
+      "score": 5
+    }
+  }
+]

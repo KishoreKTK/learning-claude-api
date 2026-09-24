@@ -1,0 +1,14 @@
+[
+  {
+    "task": "Parse an AWS S3 bucket name from an S3 URI (e.g., s3://my-bucket/path/to/file.txt)",
+    "format": "regex"
+  },
+  {
+    "task": "Create a JSON configuration object for an AWS Lambda function that runs every 5 minutes with environment variables for API_KEY and LOG_LEVEL",
+    "format": "json"
+  },
+  {
+    "task": "Write a Python function that extracts the region code from an AWS ARN string (e.g., arn:aws:s3:us-west-2:123456789012:bucket/my-bucket)",
+    "format": "python"
+  }
+]
