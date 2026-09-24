@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 # Add parent directory to path to import utils
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from utils import add_user_message, add_assistant_message, chat
 
